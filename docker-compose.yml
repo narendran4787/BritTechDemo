@@ -1,0 +1,58 @@
+version: '3.9'
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: products-db
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=${SA_PASSWORD:-YourStrong@Password123!}
+      - MSSQL_PID=Developer
+      - MSSQL_AGENT_ENABLED=true
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'YourStrong@Password123!' -C -Q 'SELECT 1' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+    networks:
+      - products-network
+
+  api:
+    build:
+      context: .
+      dockerfile: ./src/API/Dockerfile
+    container_name: products-api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - UseSqlServer=true
+      - DB_USERNAME=${DB_USERNAME:-sa}
+      - DB_PASSWORD=${DB_PASSWORD:-YourStrong@Password123!}
+      - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=ProductsDb;User Id=${DB_USERNAME:-sa};Password=${DB_PASSWORD:-YourStrong@Password123!};TrustServerCertificate=True;MultipleActiveResultSets=True;Encrypt=True;Connection Timeout=60;Pooling=true
+      - ASPNETCORE_URLS=https://+:8443
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=dev-cert-password
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/dev-cert.pfx
+    ports:
+      - "8443:8443"
+    # Certificate is included in the Docker image at build time
+    # Volume mount below can override the certificate at runtime if needed
+    volumes:
+      - ./certs:/https:ro
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    networks:
+      - products-network
+    restart: unless-stopped
+
+volumes:
+  sqlserver_data:
+    driver: local
+
+networks:
+  products-network:
+    driver: bridge

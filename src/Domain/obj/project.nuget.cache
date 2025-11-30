@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "o09lXGr7Kx8=",
+  "success": true,
+  "projectFilePath": "/Users/narendranpandian/RiderProjects/WebApplication2/BritTechDemo/src/Domain/Domain.csproj",
+  "expectedPackageFiles": [
+    "/Users/narendranpandian/.nuget/packages/microsoft.netcore.app.ref/8.0.22/microsoft.netcore.app.ref.8.0.22.nupkg.sha512",
+    "/Users/narendranpandian/.nuget/packages/microsoft.aspnetcore.app.ref/8.0.22/microsoft.aspnetcore.app.ref.8.0.22.nupkg.sha512"
+  ],
+  "logs": []
+}
